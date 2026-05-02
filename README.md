@@ -72,7 +72,7 @@ Skapa `pom.xml`:
         <dependency>
             <groupId>org.duckdb</groupId>
             <artifactId>duckdb_jdbc</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.0.0</version>
         </dependency>
     </dependencies>
 
