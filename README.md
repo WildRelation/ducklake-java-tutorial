@@ -50,10 +50,10 @@ java -version
 mkdir ~/ducklake-java && cd ~/ducklake-java
 ```
 
-Ladda ner senaste versionen av DuckDB JDBC:
+Ladda ner DuckDB JDBC:
 
 ```bash
-bash download_duckdb.sh
+wget -q -O duckdb.jar https://repo1.maven.org/maven2/org/duckdb/duckdb_jdbc/1.2.0/duckdb_jdbc-1.2.0.jar
 ```
 
 ---
