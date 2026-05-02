@@ -29,8 +29,6 @@ public class DuckLakeGeneric {
             stmt.execute("INSTALL postgres");
             stmt.execute("LOAD postgres");
 
-            // Fix 1: TYPE postgres is not a valid DuckDB secret type.
-            // Postgres credentials go directly in the ATTACH string instead.
             stmt.execute(String.format(
                 "CREATE OR REPLACE SECRET garage_secret (" +
                 "TYPE s3, PROVIDER config, KEY_ID '%s', SECRET '%s', " +
@@ -39,7 +37,6 @@ public class DuckLakeGeneric {
             ));
             System.out.println("✓ S3/Garage secret configured");
 
-            // Fix 2: Include full Postgres connection string in ATTACH.
             stmt.execute(String.format(
                 "ATTACH 'ducklake:postgres:dbname=%s host=%s port=%s user=%s password=%s' AS my_data " +
                 "(DATA_PATH 's3://%s/')",
@@ -49,7 +46,6 @@ public class DuckLakeGeneric {
 
             System.out.println("\nTabeller i databasen:");
             ResultSet rs = stmt.executeQuery("SHOW ALL TABLES");
-            // Fix 3: getString(1) returned the database name, not the table name.
             while (rs.next()) System.out.println("- " + rs.getString("name"));
             rs.close();
 
