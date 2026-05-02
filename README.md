@@ -4,26 +4,35 @@ En steg-för-steg tutorial för att ansluta till DuckLake via Java på en virtue
 
 > **OBS — Linux-distribution:** Det går att välja olika Linux-distributioner när du skapar en deployment på KTH Cloud. Det här tutorialet är skrivet för **Ubuntu** och använder `apt` som pakethanterare. Använder du en annan distro (t.ex. Fedora, Debian, Arch) kan kommandona för att installera paket se annorlunda ut.
 
-## Förutsättningar
-
-- En SSH-nyckel skapad och uppladdad till din profil på [KTH Cloud](https://cloud.cbh.kth.se)
-- Credentials från [DuckLake Access Manager](https://ducklake-access-manager.app.cloud.cbh.kth.se/)
+**Krav:** En aktiv nyckel (`.env`) — hämtas från [ducklake-access-manager.app.cloud.cbh.kth.se](https://ducklake-access-manager.app.cloud.cbh.kth.se/)
 
 ---
 
-## Steg 1 — Anslut till servern
+## Steg 1 — Skapa SSH-nyckel och lägg till din KTH Cloud-profil
+
+Generera ett SSH-nyckelpar lokalt:
 
 ```bash
-ssh <din deployment>@deploy.cloud.cbh.kth.se
+ssh-keygen -t ed25519 -C "din@epost.se"
 ```
+
+Kopiera den publika nyckeln:
+
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
+
+Lägg till nyckeln i din KTH Cloud-profil under **Settings → SSH Keys**.
 
 ---
 
-## Steg 2 — Byt till bash-shell
+## Steg 2 — Anslut till din deployment
 
-```bash
-bash
-```
+Öppna din deployment via SSH i valfritt verktyg och använd bash:
+
+- **VS Code** — Remote-SSH extension
+- **Terminal** — `ssh <din deployment>@deploy.cloud.cbh.kth.se`
+- **IntelliJ** — Tools → SSH Sessions
 
 ---
 
@@ -50,8 +59,6 @@ mkdir -p ~/ducklake-java/src/main/java && cd ~/ducklake-java
 ```
 
 ### pom.xml
-
-Skapa filen `pom.xml` i `~/ducklake-java/`:
 
 ```bash
 nano -w pom.xml
@@ -96,8 +103,6 @@ nano -w pom.xml
 ```
 
 ### DuckLakeGeneric.java
-
-Skapa filen `src/main/java/DuckLakeGeneric.java`:
 
 ```bash
 nano -w src/main/java/DuckLakeGeneric.java
@@ -168,9 +173,9 @@ Spara varje fil med `Ctrl+O` → `Enter` → `Ctrl+X`.
 
 ---
 
-## Steg 5 — Skapa .env-fil med dina credentials
+## Steg 5 — Anslutning
 
-Hämta dina credentials från [DuckLake Access Manager](https://ducklake-access-manager.app.cloud.cbh.kth.se/):
+Skapa en `.env`-fil:
 
 ```bash
 nano -w .env
@@ -192,9 +197,7 @@ PGUSER=<DITT_ANVÄNDARNAMN>
 PGPASSWORD=<DITT_LÖSENORD>
 ```
 
----
-
-## Steg 6 — Ladda miljövariabler och kör
+Ladda miljövariabler och kör:
 
 ```bash
 set -a; source .env; set +a
@@ -211,6 +214,6 @@ mvn compile exec:java
 | Problem | Lösning |
 |---|---|
 | `Permission denied (publickey)` | Din SSH-nyckel är inte uppladdad på KTH Cloud |
-| `Miljövariabler saknas` | Kör `set -a; source .env; set +a` i Steg 6 innan du kör Maven |
+| `Miljövariabler saknas` | Kör `set -a; source .env; set +a` innan du kör Maven |
 | Kompileringsfel med långa rader | Använd `nano -w` för att stänga av automatisk radbrytning |
 | Filen försvann efter omstart | Lägg till persistent storage i deploymentet på KTH Cloud |
