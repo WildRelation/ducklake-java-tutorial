@@ -24,34 +24,38 @@ public class DuckLakeGeneric {
             Connection con = DriverManager.getConnection("jdbc:duckdb:");
             Statement stmt = con.createStatement();
 
-            stmt.execute("INSTALL ducklake"); stmt.execute("LOAD ducklake;");
-            stmt.execute("INSTALL postgres"); stmt.execute("LOAD postgres;");
+            stmt.execute("INSTALL ducklake");
+            stmt.execute("LOAD ducklake");
+            stmt.execute("INSTALL postgres");
+            stmt.execute("LOAD postgres");
 
-            stmt.execute(String.format(
-                "CREATE OR REPLACE SECRET (" +
-                "TYPE postgres, HOST '%s', PORT %s, " +
-                "DATABASE %s, USER '%s', PASSWORD '%s')",
-                pgHost, pgPort, pgDatabase, pgUser, pgPassword
-            ));
-
+            // Fix 1: TYPE postgres is not a valid DuckDB secret type.
+            // Postgres credentials go directly in the ATTACH string instead.
             stmt.execute(String.format(
                 "CREATE OR REPLACE SECRET garage_secret (" +
                 "TYPE s3, PROVIDER config, KEY_ID '%s', SECRET '%s', " +
                 "REGION '%s', ENDPOINT '%s', URL_STYLE 'path', USE_SSL false)",
                 s3Key, s3Secret, s3Region, s3Endpoint
             ));
+            System.out.println("✓ S3/Garage secret configured");
 
+            // Fix 2: Include full Postgres connection string in ATTACH.
             stmt.execute(String.format(
-                "ATTACH 'ducklake:postgres:dbname=%s' AS my_data " +
+                "ATTACH 'ducklake:postgres:dbname=%s host=%s port=%s user=%s password=%s' AS my_data " +
                 "(DATA_PATH 's3://%s/')",
-                pgDatabase, s3Bucket
+                pgDatabase, pgHost, pgPort, pgUser, pgPassword, s3Bucket
             ));
+            System.out.println("✓ DuckLake attached");
 
-            System.out.println("Anslutning lyckades! Tabeller i databasen:");
+            System.out.println("\nTabeller i databasen:");
             ResultSet rs = stmt.executeQuery("SHOW ALL TABLES");
-            while (rs.next()) System.out.println("- " + rs.getString(1));
+            // Fix 3: getString(1) returned the database name, not the table name.
+            while (rs.next()) System.out.println("- " + rs.getString("name"));
+            rs.close();
 
+            stmt.close();
             con.close();
+            System.out.println("\n✓ Anslutning stängd");
         } catch (Exception e) {
             e.printStackTrace();
         }

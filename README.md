@@ -56,10 +56,12 @@ Kolla senaste tillgängliga version:
 curl -s https://repo1.maven.org/maven2/org/duckdb/duckdb_jdbc/maven-metadata.xml | grep "<version>"
 ```
 
-Ladda ner senaste versionen (byt ut versionsnumret om det finns en nyare):
+Ladda ner senaste versionen automatiskt:
 
 ```bash
-curl -L -o duckdb.jar https://repo1.maven.org/maven2/org/duckdb/duckdb_jdbc/1.5.2.1/duckdb_jdbc-1.5.2.1.jar
+VERSION=$(curl -s https://repo1.maven.org/maven2/org/duckdb/duckdb_jdbc/maven-metadata.xml | grep -oPm1 "(?<=<release>)[^<]+")
+curl -L -o duckdb.jar "https://repo1.maven.org/maven2/org/duckdb/duckdb_jdbc/${VERSION}/duckdb_jdbc-${VERSION}.jar"
+echo "Nedladdad version: $VERSION"
 ```
 
 ---
@@ -105,10 +107,10 @@ Spara med `Ctrl+O` → `Enter` → `Ctrl+X`.
 ## Steg 7 — Skapa Java-filen
 
 ```bash
-nano -w <filensnamn>.java
+nano -w DuckLakeGeneric.java
 ```
 
-Klistra in koden från filen `filensnamn.java` i detta repo.
+Klistra in koden från filen `DuckLakeGeneric.java` i detta repo.
 
 Spara med `Ctrl+O` → `Enter` → `Ctrl+X`.
 
@@ -125,7 +127,7 @@ export $(cat .env | grep -v '^#' | grep -v '^\s*$' | xargs)
 Kompilera och kör:
 
 ```bash
-javac -cp duckdb.jar <filensnamn>.java && java -cp .:duckdb.jar <filensnamn>
+javac -cp duckdb.jar DuckLakeGeneric.java && java -cp .:duckdb.jar DuckLakeGeneric
 ```
 
 ---
