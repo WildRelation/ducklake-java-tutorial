@@ -43,19 +43,65 @@ mvn -version
 
 ---
 
-## Steg 4 — Skapa arbetsmapp och Java-fil
+## Steg 4 — Skapa projektstruktur
 
 ```bash
 mkdir -p ~/ducklake-java/src/main/java && cd ~/ducklake-java
 ```
 
-Kopiera `pom.xml` till `~/ducklake-java/` och skapa sedan Java-filen:
+### pom.xml
+
+Skapa filen `pom.xml` i `~/ducklake-java/`:
+
+```bash
+nano -w pom.xml
+```
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>se.kth</groupId>
+    <artifactId>ducklake-java</artifactId>
+    <version>1.0</version>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.duckdb</groupId>
+            <artifactId>duckdb_jdbc</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>DuckLakeGeneric</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+### DuckLakeGeneric.java
+
+Skapa filen `src/main/java/DuckLakeGeneric.java`:
 
 ```bash
 nano -w src/main/java/DuckLakeGeneric.java
 ```
-
-Klistra in följande kod:
 
 ```java
 import java.sql.*;
@@ -75,12 +121,11 @@ public class DuckLakeGeneric {
         String pgPassword = System.getenv("PGPASSWORD");
 
         if (s3Key == null || pgPassword == null) {
-            System.err.println("Fel: Miljövariabler saknas! Kör: export $(cat .env | grep -v '^#' | xargs)");
+            System.err.println("Fel: Miljövariabler saknas! Kör: set -a; source .env; set +a");
             return;
         }
 
         try {
-            Class.forName("org.duckdb.DuckDBDriver");
             Connection con = DriverManager.getConnection("jdbc:duckdb:");
             Statement stmt = con.createStatement();
 
@@ -119,21 +164,17 @@ public class DuckLakeGeneric {
 }
 ```
 
-Spara med `Ctrl+O` → `Enter` → `Ctrl+X`.
-
-Maven laddar automatiskt ner DuckDB JDBC när du kör projektet.
+Spara varje fil med `Ctrl+O` → `Enter` → `Ctrl+X`.
 
 ---
 
 ## Steg 5 — Skapa .env-fil med dina credentials
 
-Hämta dina credentials från [DuckLake Access Manager](https://ducklake-access-manager.app.cloud.cbh.kth.se/) och skapa filen:
+Hämta dina credentials från [DuckLake Access Manager](https://ducklake-access-manager.app.cloud.cbh.kth.se/):
 
 ```bash
 nano -w .env
 ```
-
-Klistra in och fyll i dina värden:
 
 ```bash
 # Storage (S3/Garage)
@@ -151,19 +192,13 @@ PGUSER=<DITT_ANVÄNDARNAMN>
 PGPASSWORD=<DITT_LÖSENORD>
 ```
 
-Spara med `Ctrl+O` → `Enter` → `Ctrl+X`.
-
 ---
 
 ## Steg 6 — Ladda miljövariabler och kör
 
-Ladda in `.env`-filen i shellet:
-
 ```bash
-export $(cat .env | grep -v '^#' | grep -v '^\s*$' | xargs)
+set -a; source .env; set +a
 ```
-
-Kompilera och kör med Maven:
 
 ```bash
 mvn compile exec:java
@@ -176,6 +211,6 @@ mvn compile exec:java
 | Problem | Lösning |
 |---|---|
 | `Permission denied (publickey)` | Din SSH-nyckel är inte uppladdad på KTH Cloud |
-| `Miljövariabler saknas` | Kör `export`-kommandot i Steg 6 innan du kör Maven |
+| `Miljövariabler saknas` | Kör `set -a; source .env; set +a` i Steg 6 innan du kör Maven |
 | Kompileringsfel med långa rader | Använd `nano -w` för att stänga av automatisk radbrytning |
 | Filen försvann efter omstart | Lägg till persistent storage i deploymentet på KTH Cloud |

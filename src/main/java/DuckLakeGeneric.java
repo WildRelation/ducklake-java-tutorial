@@ -20,7 +20,6 @@ public class DuckLakeGeneric {
         }
 
         try {
-            Class.forName("org.duckdb.DuckDBDriver");
             Connection con = DriverManager.getConnection("jdbc:duckdb:");
             Statement stmt = con.createStatement();
 
