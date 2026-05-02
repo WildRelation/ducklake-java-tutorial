@@ -10,15 +10,8 @@ En steg-för-steg tutorial för att ansluta till DuckLake via Java på en virtue
 
 ## Steg 1 — Skapa SSH-nyckel och lägg till din KTH Cloud-profil
 
-Generera ett SSH-nyckelpar lokalt:
-
 ```bash
 ssh-keygen -t ed25519 -C "din@epost.se"
-```
-
-Kopiera den publika nyckeln:
-
-```bash
 cat ~/.ssh/id_ed25519.pub
 ```
 
@@ -58,11 +51,7 @@ mvn -version
 mkdir -p ~/ducklake-java/src/main/java && cd ~/ducklake-java
 ```
 
-### pom.xml
-
-```bash
-nano -w pom.xml
-```
+Skapa `pom.xml`:
 
 ```xml
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -94,7 +83,7 @@ nano -w pom.xml
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>DuckLakeGeneric</mainClass>
+                    <mainClass>Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>
@@ -102,16 +91,12 @@ nano -w pom.xml
 </project>
 ```
 
-### DuckLakeGeneric.java
-
-```bash
-nano -w src/main/java/DuckLakeGeneric.java
-```
+Skapa `src/main/java/Main.java`:
 
 ```java
 import java.sql.*;
 
-public class DuckLakeGeneric {
+public class Main {
     public static void main(String[] args) {
         String s3Key      = System.getenv("AWS_ACCESS_KEY_ID");
         String s3Secret   = System.getenv("AWS_SECRET_ACCESS_KEY");
@@ -169,17 +154,11 @@ public class DuckLakeGeneric {
 }
 ```
 
-Spara varje fil med `Ctrl+O` → `Enter` → `Ctrl+X`.
-
 ---
 
 ## Steg 5 — Anslutning
 
 Skapa en `.env`-fil:
-
-```bash
-nano -w .env
-```
 
 ```bash
 # Storage (S3/Garage)
@@ -201,9 +180,6 @@ Ladda miljövariabler och kör:
 
 ```bash
 set -a; source .env; set +a
-```
-
-```bash
 mvn compile exec:java
 ```
 
